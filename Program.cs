@@ -14,10 +14,10 @@ namespace TelegramBotExperiments
 
     class Program
     {
-        static string TOKENBOT = "5793431266:AAFK1Py744xfBhM2A3Qkss18kqomE5iIWWA";// Изменить
+        static string TOKENBOT = "tokenbot";// Изменить
         static ITelegramBotClient bot = new TelegramBotClient(TOKENBOT);
         // каталог, где находятся файлы, фотографии
-        static string path = "C:\\Users\\1392680\\source\\repos\\SendTelegrambot\\";// Изменить
+        static string path = "path to photo";// Изменить
 
         public static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
@@ -29,48 +29,34 @@ namespace TelegramBotExperiments
             if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
             {
                 var message = update.Message;
-                
-                if (message.Text.ToLower() == "/start")
-                {
-                    /* 0 - отправка текстового сообщения */
-                    await botClient.SendTextMessageAsync(message.Chat, "Добро пожаловать на борт, добрый путник!");
-                    return; // останавливаем выполнение метода
-                }
+                string command = message.Text.ToLower();
+                string picture = "pic.jpg"; // pic.jpg
+                await using Stream stream = System.IO.File.OpenRead(path + picture);
 
-                if (message.Text.ToLower() == "/picurl")
+                switch (command)
                 {
-                    /* 1 - отправка фотографии из интернета (через url) */
-                    await botClient.SendPhotoAsync(
-                        message.Chat, 
+                    case "/start":/* 0 - отправка текстового сообщения */
+                        await botClient.SendTextMessageAsync(message.Chat, "Добро пожаловать на борт, добрый путник!");
+                        break;
+                    case "/picurl":
+                        await botClient.SendPhotoAsync(
+                        message.Chat,
                         InputFileId.FromUri("https://bugaga.ru/uploads/posts/2022-08/1660840053_priroda-4.jpg"));
-
-                    return;
-                }
-
-                if (message.Text.ToLower() == "/picfile")
-                {
-                    /* 2 - отправка файла (фотографии в виде файла) */
-                    string picture = "pic.jpg";
-                    await using Stream stream = System.IO.File.OpenRead(path + picture);
-                    await bot.SendDocumentAsync(
-                        chatId: message.Chat,
-                        document: InputFile.FromStream(stream: stream, fileName: "picture.jpg"),//назание файла
-                        caption: "Pic");
-
-                    return;
-                }
-
-                if (message.Text.ToLower() == "/piclocale")
-                {
-                    /* 3 - отправка фотографии из локального хранилища */
-                    string picture = "picture.jpg";
-                    await using Stream stream = System.IO.File.OpenRead(path + picture);
-                    await bot.SendPhotoAsync(
-                        chatId: message.Chat,
-                        photo: InputFile.FromStream(stream: stream, fileName: "picture.jpg"),//назание файла
-                        caption: "Pic");
-
-                    return;
+                        break;
+                    case "/picfile":/* 2 - отправка файла (фотографии в виде файла) */
+                        await bot.SendDocumentAsync(
+                            chatId: message.Chat,
+                            document: InputFile.FromStream(stream: stream, fileName: "picture.jpg"),//назание файла
+                            caption: "Pic");
+                        break;
+                    case "/piclocale":/* 3 - отправка фотографии из локального хранилища */
+                        await bot.SendPhotoAsync(
+                            chatId: message.Chat,
+                            photo: InputFile.FromStream(stream: stream, fileName: "picture.jpg"),//назание файла
+                            caption: "Pic");
+                        break;
+                    default:
+                        break;
                 }
             }
         }
